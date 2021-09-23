@@ -59,6 +59,39 @@ app.get('/secrets', function(req, res) {
     }
 });
 
+app.get('/changepassword', function(req, res) {
+    res.render('changepassword');
+});
+
+app.post('/changepassword', function(req, res) {
+
+    User.findOne({ username: req.body.username },(err, user) => {
+      // Check if error connecting
+      if (err) {
+        res.json({ success: false, message: err }); // Return error
+      } else {
+        // Check if user was found in database
+        if (!user) {
+          res.json({ success: false, message: 'User not found' }); // Return error, user was not found in db
+        } else {
+          user.changePassword(req.body.oldpassword, req.body.newpassword, function(err) {
+             if(err) {
+                      if(err.name === 'IncorrectPasswordError'){
+                           res.send("<h1 class = 'container'> Incorrect Password!</h1>");
+                           res.json({ success: false, message: 'Incorrect password' }); // Return error
+                      }else {
+                          res.send("<h1 class = 'container'> Something went wrong!! Please try again after sometimes.</h1>");
+                          res.json({ success: false, message: 'Something went wrong!! Please try again after sometimes.' });
+                      }
+            } else {
+              res.send("<h1 class = 'container'> Your password has been changed successfully! </h1>");
+              res.json({ success: true, message: 'Your password has been changed successfully' });
+             }
+           })
+        }
+      }
+    });   });
+
 app.get('/logout', function(req, res) {
 
     req.logout();
